@@ -1,0 +1,59 @@
+name: constitutionofindia
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  flutter_native_splash: ^2.4.7
+  http: ^1.6.0
+  share_plus: ^13.1.0
+  shared_preferences: ^2.5.5
+  url_launcher: ^6.3.2
+  flutter_launcher_icons: ^0.14.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/
+
+# FULLY FIXED SPLASH SCREEN CONFIGURATION
+flutter_native_splash:
+  color: "#ffffff" # Canvas background color
+  android: true
+  ios: true
+  fullscreen: true
+
+  # This asset is what older Android versions and iOS will use
+
+
+  # This explicitly tells Android 12+ to use your splash asset instead of the home icon
+  android_12:
+
+    icon_background_color: "#ffffff"
+    fullscreen: true
+
+# FIXED LAUNCHER ICON CONFIGURATION
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/app_icon.png" # Keeps your app icon strictly on the phone home screen
+  min_sdk_android: 21
+
+  # Adaptive settings push the icon boundaries right to the phone's grid limits
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/app_icon.png"
