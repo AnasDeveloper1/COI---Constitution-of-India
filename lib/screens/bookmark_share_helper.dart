@@ -3,6 +3,7 @@ import 'package:share_plus/share_plus.dart';
 
 class BookmarkShareHelper {
   static const String _key = "my_bookmarks_v2"; 
+  static const String _termsKey = "has_accepted_terms_v1"; // Key for terms state
 
   // Native System Sharing Handler
   static void shareContent(String title, String description) {
@@ -51,5 +52,17 @@ class BookmarkShareHelper {
     List<String> currentList = prefs.getStringList(_key) ?? [];
     currentList.removeWhere((item) => item.startsWith("$title|||"));
     await prefs.setStringList(_key, currentList);
+  }
+
+  // --- NEW: Check if the user already accepted the terms ---
+  static Future<bool> hasAcceptedTerms() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_termsKey) ?? false;
+  }
+
+  // --- NEW: Saves the user's acceptance status ---
+  static Future<void> acceptTerms() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_termsKey, true);
   }
 }
