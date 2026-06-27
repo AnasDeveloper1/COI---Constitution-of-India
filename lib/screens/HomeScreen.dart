@@ -7,12 +7,102 @@ import 'package:constitutionofindia/screen_articles/schedule_screen.dart';
 import 'package:constitutionofindia/screens/bookmark_screen.dart';
 import 'package:constitutionofindia/screens/notes_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Required for closing the app via SystemNavigator.pop
 
 import 'home_card.dart';
-import '../main.dart'; // IMPORTANT: Adjust this path to wherever your global themeManager is located
+import '../main.dart'; 
+import 'bookmark_share_helper.dart'; // Required to communicate with your storage methods
 
-class HomeScreen extends StatelessWidget {
+// Clean constant string holding your required legal text text
+const String constitutionAppTerms = """
+Terms & Conditions for Constitution of India App
+
+1. Acceptance of Terms
+By accessing or using this app, you agree to be bound by these Terms and Conditions. If you do not agree, please do not use the app.
+
+2. Informational & Educational Purpose Only
+This app is designed solely for educational, reference, and informational purposes. While we strive to ensure the accuracy of the text of the Constitution of India, amendments, and schedules, the content provided in this app should not be treated as official legal text, legal advice, or an official government publication. 
+
+3. No Government Affiliation
+This app is an independent project. It is not affiliated with, authorized by, endorsed by, or in any way officially connected to the Government of India, the Ministry of Law and Justice, or any other government agency. For official purposes, users should consult the Gazette of India or official government portals.
+
+4. Limitation of Liability
+We do not guarantee that the app will be completely error-free or up-to-date with the absolute latest amendments in real-time. Under no circumstances shall the developers be held liable for any inaccuracies, errors, omissions, or any damages resulting from the use of or reliance on the information provided herein.
+
+5. User Conduct
+You agree to use this app responsibly and legally. You may not use this app to distribute hate speech, political misinformation, or engage in any behavior that violates the laws of India.
+
+6. Changes to Terms
+We reserve the right to update these terms at any time. Your continued use of the app after changes are posted constitutes your acceptance of the new terms.
+""";
+
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+    // Ensures context tree is painted on screen before pushing dialog layout blocks
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkTermsRequirement();
+    });
+  }
+
+  // Evaluation logic checking preference flags from storage
+  void _checkTermsRequirement() async {
+    bool hasAccepted = await BookmarkShareHelper.hasAcceptedTerms();
+    if (!hasAccepted && mounted) {
+      _showConstitutionTermsDialog(context);
+    }
+  }
+
+  // Renders the un-dismissible dialog wrapper component
+  void _showConstitutionTermsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Disables background cancel taps
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text(
+            "Terms and Conditions",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: const SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Text(
+                constitutionAppTerms,
+                style: TextStyle(fontSize: 14, height: 1.4),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text("Decline", style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                SystemNavigator.pop(); // Gracefully exit the app context
+              },
+            ),
+            ElevatedButton(
+              child: const Text("Accept & Continue"),
+              onPressed: () async {
+                await BookmarkShareHelper.acceptTerms();
+                if (dialogContext.mounted) {
+                  Navigator.of(dialogContext).pop();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +122,6 @@ class HomeScreen extends StatelessWidget {
                     height: 99,
                   ),
                   const SizedBox(height: 10),
-                  // ListenableBuilder updates text color dynamically based on theme context
                   Text(
                     "Constitution of India",
                     style: TextStyle(
@@ -48,7 +137,6 @@ class HomeScreen extends StatelessWidget {
               leading: const Icon(Icons.home),
               title: const Text("Home"),
               onTap: () {
-                // FIXED: Just close the drawer. Pushing HomeScreen again creates an infinite stack loop.
                 Navigator.pop(context);
               },
             ),
@@ -77,7 +165,6 @@ class HomeScreen extends StatelessWidget {
             
             const Divider(),
 
-            // --- THE NEW DAY & NIGHT THEME TOGGLE SWITCH ---
             ListenableBuilder(
               listenable: themeManager,
               builder: (context, _) {
