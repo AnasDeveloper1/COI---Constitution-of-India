@@ -1,6 +1,6 @@
 import 'package:constitutionofindia/screens/HomeScreen.dart';
 import 'package:flutter/material.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_colors.dart';
 import '../widgets/primary_colors.dart';
 
@@ -95,14 +95,20 @@ class _IntroductionScreenState extends State<IntroductionScreen> {
               const SizedBox(height: 30),
               PrimaryButton(
                 text: currentIndex == pages.length - 1 ? "Get Started" : "Next",
-                onTap: () {
+                onTap: () async { // <-- Make this async
                   if (currentIndex == pages.length - 1) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const HomeScreen(),
-                      ),
-                    );
+                    // --- NEW: Save that the user has seen the intro ---
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setBool('has_seen_intro', true);
+
+                    if (mounted) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const HomeScreen(),
+                        ),
+                      );
+                    }
                   } else {
                     pageController.nextPage(
                       duration: const Duration(milliseconds: 300),
